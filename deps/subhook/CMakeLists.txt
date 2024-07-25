@@ -14,12 +14,12 @@ macro(subhook_add_option_var name type default_value description)
   set(${name} ${${name}_DEFAULT} CACHE ${type} ${description})
 endmacro()
 
-subhook_add_option_var(SUBHOOK_STATIC BOOL OFF "Build as a static library")
+subhook_add_option_var(SUBHOOK_STATIC BOOL ON "Build as a static library")
 subhook_add_option_var(SUBHOOK_INSTALL
   BOOL ON "Enable installation and packaging of targets/files with CPack")
 subhook_add_option_var(SUBHOOK_TESTS BOOL OFF "Enable tests")
 subhook_add_option_var(SUBHOOK_FORCE_32BIT
-  BOOL OFF "Configure for compiling 32-bit binaries (on 64-bit systems)")
+  BOOL ON "Configure for compiling 32-bit binaries (on 64-bit systems)")
 
 set(SUBHOOK_HEADERS subhook.h)
 set(SUBHOOK_SOURCES subhook.c subhook_private.h subhook_x86.c)
