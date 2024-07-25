@@ -1,0 +1,73 @@
+name: Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "*"
+  pull_request:
+    branches:
+      - "*"
+
+jobs:
+  build-windows:
+    name: Windows build
+    runs-on: windows-2019
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          clean: true
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Install CMake
+        uses: lukka/get-cmake@latest
+        with:
+          cmakeVersion: "3.23.2"
+
+      - name: Generate build files
+        run: |
+          mkdir build
+          cd build
+          cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo .. -A Win32
+
+      - name: Build
+        run: |
+          cd build
+          cmake --build . --config RelWithDebInfo
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: bscrashfix-windows
+          path: build/RelWithDebInfo/bscrashfix.dll
+          if-no-files-found: error
+
+  build-linux:
+    name: Linux build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          clean: true
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Set ownership
+        run: |
+          # this is to fix GIT not liking owner of the checkout dir
+          chown -R $(id -u):$(id -g) $PWD
+
+      - name: Build
+        run: |
+          cd docker
+          ./build.sh
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: bscrashfix-linux
+          path: docker/build/bscrashfix.so
+          if-no-files-found: error
