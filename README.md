@@ -1,9 +1,9 @@
 ## SAMP BitStream Crash Fix
-This plugin fixes the issue with BitStream read overruns for functinos `BitStream::ReadBits`, `BitStream::Read`, and `BitStream::ReadBool` (only on windows)
+This plugin fixes the issue with BitStream read overruns for functions `BitStream::ReadBits`, `BitStream::Read`, and `BitStream::ReadBool` (only on windows)
 
 Please go to https://github.com/AmyrAhmady/samp-bscrashfix/releases and download latest version
 
-All you need to do is to copy plugin file for your platform and add it to your `server.cfg`
+All you need to do is to copy the plugin file and paste it into your `plugins\` folder and add it to your `server.cfg`
 
 **Note:** open.mp is not affected by this exploit.
 
