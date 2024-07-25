@@ -30,30 +30,17 @@
 
 #endif
 
-#define HookFunctionWithPattern(name)                                  \
-	urmem::address_t name##_FuncAddr;                                  \
-	if (!scanner.find(name##_PATTERN, name##_FuncAddr))                \
-	{                                                                  \
-		logprintf("[BSCrashFix] Unable to hook %s", #name);            \
-		return false;                                                  \
-	}                                                                  \
-	name##Orig = (name##Type)name##_FuncAddr;                          \
-	hook##name.Install((void *)name##_FuncAddr, (void *)name, subhook::HookFlagTrampoline);
-
 typedef void(*logprintf_t)(const char* format, ...);
 logprintf_t logprintf;
 
 typedef bool (THISCALL* BSReadBoolType)(RakNet::BitStream* _this, bool* value);
 subhook::Hook hookBSReadBool;
-BSReadBoolType BSReadBoolOrig = nullptr;
 
 typedef bool (THISCALL* BSReadType)(RakNet::BitStream* _this, char* output, int numberOfBytes);
 subhook::Hook hookBSRead;
-BSReadType BSReadOrig = nullptr;
 
 typedef bool (THISCALL* BSReadBitsType)(RakNet::BitStream* _this, char* output, int numberOfBitsToRead, bool alignBitsToRight);
 subhook::Hook hookBSReadBits;
-BSReadBitsType BSReadBitsOrig = nullptr;
 
 inline int GetNumberOfUnreadBits(RakNet::BitStream* bs)
 {
@@ -68,7 +55,7 @@ bool TC_FUNCDEF(BSRead, char* output, int numberOfBytes)
 		return false;
 	}
 
-	return ((BSReadType)hookBSRead.GetTrampoline())(_this, output, numberOfBytes);
+	return reinterpret_cast<BSReadType>(hookBSRead.GetTrampoline())(_this, output, numberOfBytes);
 }
 
 bool TC_FUNCDEF(BSReadBits, char* output, int numberOfBitsToRead, bool alignBitsToRight)
@@ -84,7 +71,7 @@ bool TC_FUNCDEF(BSReadBits, char* output, int numberOfBitsToRead, bool alignBits
 		return false;
 	}
 
-	return ((BSReadBitsType)hookBSReadBits.GetTrampoline())(_this, output, numberOfBitsToRead, alignBitsToRight);
+	return reinterpret_cast<BSReadBitsType>(hookBSReadBits.GetTrampoline())(_this, output, numberOfBitsToRead, alignBitsToRight);
 }
 
 bool TC_FUNCDEF(BSReadBool, bool* value)
@@ -94,8 +81,26 @@ bool TC_FUNCDEF(BSReadBool, bool* value)
 		return false;
 	}
 
-	return ((BSReadBoolType)hookBSReadBool.GetTrampoline())(_this, value);
+	return reinterpret_cast<BSReadBoolType>(hookBSReadBool.GetTrampoline())(_this, value);
 }
+
+bool scan_hook(const urmem::sig_scanner &scanner, subhook::Hook &hook, const char *name, const char *bytes, const char *mask, void *func)
+{
+	urmem::address_t addr;
+	if (scanner.find(bytes, mask, addr))
+	{
+		if (hook.Install(reinterpret_cast<void*>(addr), func, subhook::HookFlagTrampoline) )
+		{
+			return true;
+		}
+	}
+	logprintf("[BSCrashFix] Unable to hook %s", name);
+	return false;
+}
+
+#define HookFunctionWithPattern(name) \
+	if (!scan_hook(scanner, hook##name, #name, name##_PATTERN, reinterpret_cast<void*>(name))) \
+		return false
 
 EXTERN bool CALL Load(void** ppData)
 {
