@@ -3,6 +3,7 @@
 #include <subhook.h>
 
 #ifdef _WIN32
+#define CALL __stdcall
 #define THISCALL __thiscall
 #define FASTCALL __fastcall
 #define EXTERN extern "C"
@@ -16,6 +17,7 @@
 #define BSReadBool_PATTERN "\x8B\xC1\x8B\x48\x08\x8B\x10\x56\x8D\x71\x01\x3B\xF2\x7E\x06\x32\xC0\x5E\xC2\x04\x00\x8B\xD1", "xxxxxxxxxxxxxxxxxxxxxxx"
 
 #elif __linux__
+#define CALL
 #define THISCALL
 #define FASTCALL
 #define EXTERN extern "C" __attribute__((visibility("default")))
@@ -32,6 +34,7 @@
 	urmem::address_t name##_FuncAddr;                                  \
 	if (!scanner.find(name##_PATTERN, name##_FuncAddr))                \
 	{                                                                  \
+		logprintf("[BSCrashFix] Unable to hook %s", #name);            \
 		return false;                                                  \
 	}                                                                  \
 	name##Orig = (name##Type)name##_FuncAddr;                          \
