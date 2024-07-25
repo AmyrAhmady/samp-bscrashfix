@@ -38,7 +38,7 @@
 		return false;                                                  \
 	}                                                                  \
 	name##Orig = (name##Type)name##_FuncAddr;                          \
-	hook##name.Install((void *)name##_FuncAddr, (void *)name);
+	hook##name.Install((void *)name##_FuncAddr, (void *)name, subhook::HookFlagTrampoline);
 
 typedef void(*logprintf_t)(const char* format, ...);
 logprintf_t logprintf;
@@ -111,7 +111,7 @@ EXTERN bool CALL Load(void** ppData)
 	HookFunctionWithPattern(BSReadBool);
 #endif
 
-	logprintf("\tBitStream Crash Fix plugin by iAmir has been successfully loaded");
+	logprintf("\tBitStream Crash Fix plugin by iAmir/IS4 has been successfully loaded");
 	logprintf("\t==== https://github.com/AmyrAhmady/samp-bscrashfix");
 	return true;
 }
