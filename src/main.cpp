@@ -97,7 +97,7 @@ bool TC_FUNCDEF(BSReadBool, bool* value)
 		return false;
 	}
 
-	return BSReadBool(_this, value);
+	return BSReadBoolOrig(_this, value);
 }
 
 EXTERN bool CALL Load(void** ppData)
