@@ -62,19 +62,17 @@ inline int GetNumberOfUnreadBits(RakNet::BitStream* bs)
 
 bool TC_FUNCDEF(BSRead, char* output, int numberOfBytes)
 {
-	subhook::ScopedHookRemove remove(&hookBSRead);
 	// logprintf("BitStream::Read: numberOfBytes = %d, GetNumberOfUnreadBits = %d", numberOfBytes, GetNumberOfUnreadBits(_this));
 	if ((_this->GetReadOffset() & 7) == 0 && _this->GetNumberOfUnreadBits() < (numberOfBytes << 3))
 	{
 		return false;
 	}
 
-	return BSReadOrig(_this, output, numberOfBytes);
+	return ((BSReadType)hookBSRead.GetTrampoline())(_this, output, numberOfBytes);
 }
 
 bool TC_FUNCDEF(BSReadBits, char* output, int numberOfBitsToRead, bool alignBitsToRight)
 {
-	subhook::ScopedHookRemove remove(&hookBSReadBits);
 	// logprintf("BitStream::ReadBits: numberOfBitsToRead = %d, GetNumberOfUnreadBits = %d", numberOfBitsToRead, GetNumberOfUnreadBits(_this));
 	if (numberOfBitsToRead <= 0)
 	{
@@ -86,18 +84,17 @@ bool TC_FUNCDEF(BSReadBits, char* output, int numberOfBitsToRead, bool alignBits
 		return false;
 	}
 
-	return BSReadBitsOrig(_this, output, numberOfBitsToRead, alignBitsToRight);
+	return ((BSReadBitsType)hookBSReadBits.GetTrampoline())(_this, output, numberOfBitsToRead, alignBitsToRight);
 }
 
 bool TC_FUNCDEF(BSReadBool, bool* value)
 {
-	subhook::ScopedHookRemove remove(&hookBSReadBool);
 	if (_this->GetNumberOfUnreadBits() == 0)
 	{
 		return false;
 	}
 
-	return BSReadBoolOrig(_this, value);
+	return ((BSReadBoolType)hookBSReadBool.GetTrampoline())(_this, value);
 }
 
 EXTERN bool CALL Load(void** ppData)
