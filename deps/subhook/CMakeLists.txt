@@ -17,7 +17,7 @@ endmacro()
 subhook_add_option_var(SUBHOOK_STATIC BOOL OFF "Build as a static library")
 subhook_add_option_var(SUBHOOK_INSTALL
   BOOL ON "Enable installation and packaging of targets/files with CPack")
-subhook_add_option_var(SUBHOOK_TESTS BOOL ON "Enable tests")
+subhook_add_option_var(SUBHOOK_TESTS BOOL OFF "Enable tests")
 subhook_add_option_var(SUBHOOK_FORCE_32BIT
   BOOL OFF "Configure for compiling 32-bit binaries (on 64-bit systems)")
 

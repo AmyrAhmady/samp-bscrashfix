@@ -1,5 +1,6 @@
 #include "urmem.hpp"
 #include "BitStream.h"
+#include <subhook.h>
 
 #ifdef _WIN32
 #define CALL __stdcall
@@ -31,15 +32,19 @@
 	{                                                                  \
 		return false;                                                  \
 	}                                                                  \
-	hook##name.install(name##_FuncAddr, urmem::get_func_addr(name)); \
-	hook##name.enable()
+	hook##name.Install((void *)name##_FuncAddr, (void *)name);
 
 typedef void(*logprintf_t)(const char* format, ...);
 logprintf_t logprintf;
 
-urmem::hook hookBSReadBool;
-urmem::hook hookBSRead;
-urmem::hook hookBSReadBits;
+typedef bool (*BSReadBoolType)(RakNet::BitStream* _this, bool* value);
+subhook::Hook hookBSReadBool;
+
+typedef bool (*BSReadType)(RakNet::BitStream* _this, char* output, int numberOfBytes);
+subhook::Hook hookBSRead;
+
+typedef bool (*BSReadBitsType)(RakNet::BitStream* _this, char* output, int numberOfBitsToRead, bool alignBitsToRight);
+subhook::Hook hookBSReadBits;
 
 inline int GetNumberOfUnreadBits(RakNet::BitStream* bs)
 {
@@ -54,7 +59,7 @@ bool TC_FUNCDEF(BSRead, char* output, int numberOfBytes)
 		return false;
 	}
 
-	return hookBSRead.call<urmem::calling_convention::thiscall, bool>(_this, output, numberOfBytes);
+	return ((BSReadType)hookBSRead.GetTrampoline())(_this, output, numberOfBytes);
 }
 
 bool TC_FUNCDEF(BSReadBits, char* output, int numberOfBitsToRead, bool alignBitsToRight)
@@ -70,7 +75,7 @@ bool TC_FUNCDEF(BSReadBits, char* output, int numberOfBitsToRead, bool alignBits
 		return false;
 	}
 
-	return hookBSReadBits.call<urmem::calling_convention::thiscall, bool>(_this, output, numberOfBitsToRead, alignBitsToRight);
+	return ((BSReadBitsType)hookBSReadBits.GetTrampoline())(_this, output, numberOfBitsToRead, alignBitsToRight);
 }
 
 bool TC_FUNCDEF(BSReadBool, bool* value)
@@ -80,7 +85,7 @@ bool TC_FUNCDEF(BSReadBool, bool* value)
 		return false;
 	}
 
-	return hookBSReadBool.call<urmem::calling_convention::thiscall, bool>(_this, value);
+	return ((BSReadBoolType)hookBSReadBool.GetTrampoline())(_this, value);
 }
 
 EXTERN bool CALL Load(void** ppData)
